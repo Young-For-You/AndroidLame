@@ -76,7 +76,9 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                int code = lameInterface.pcmToMp3(pcmPath, mp3Path, 44100 / 2, 1, 16, 5);
+                File mp3File = new File(mp3Path);
+                mp3File.deleteOnExit();
+                int code = lameInterface.pcmToMp3(pcmPath, mp3Path, 44100 / 2, 2, 16, 5);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {

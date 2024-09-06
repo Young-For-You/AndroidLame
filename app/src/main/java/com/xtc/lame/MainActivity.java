@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
         File mp3File = new File(mp3Path);
         File pcmFile = new File(pcmPath);
 
-        if (mp3File.exists()) {
+        if (!mp3File.exists()) {
             Toast.makeText(this, "mp3音频不存在", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -110,7 +110,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 int code = lameInterface.mp3ToPcm(mp3Path, pcmPath);
-                Toast.makeText(MainActivity.this, code == 0 ? "MP3 -> PCM : Success" : "MP3 -> PCM : Failed", Toast.LENGTH_SHORT).show();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this, code == 0 ? "MP3 -> PCM : Success" : "MP3 -> PCM : Failed", Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         }).start();
     }

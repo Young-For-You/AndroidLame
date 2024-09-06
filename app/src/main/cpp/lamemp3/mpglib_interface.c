@@ -28,8 +28,7 @@
 # include <config.h>
 #endif
 
-#ifdef HAVE_MPGLIB
-#define hip_global_struct mpstr_tag 
+#define hip_global_struct mpstr_tag
 #include "lame.h"
 #include "machine.h"
 #include "encoder.h"
@@ -471,7 +470,5 @@ void hip_set_msgf  (hip_t hip, lame_report_function func)
         hip->report_msg = func;
     }
 }
-
-#endif
 
 /* end of mpglib_interface.c */

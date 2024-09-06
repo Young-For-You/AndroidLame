@@ -15,8 +15,7 @@ project("lame")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lameLibs/${ANDROID_ABI})
 
 #批量导入c文件和cpp文件
-file(GLOB lame lamemp3/*.c)
-file(GLOB lame2 lamemp3/*.cpp)
+file(GLOB lame_source "lamemp3/*.c" "lamemp3/*.cpp")
 
 #批量导入头文件
 include_directories(${CMAKE_CURRENT_LIST_DIR}/lamemp3)
@@ -38,8 +37,7 @@ add_library(
         lame SHARED
         # List C/C++ source files with relative paths to this CMakeLists.txt.
         lame_xtc.cpp
-        ${lame}
-        ${lame2}
+        ${lame_source}
         )
 
 #所有指定的预构建库，并将路径定义为变量，用于后面引入

@@ -3,6 +3,26 @@
 #include <android/log.h>
 #include <lame.h>
 
+std::string jstring2string(JNIEnv* env, jstring jStr) {
+    if (!jStr) {
+        return "";
+    }
+
+    const jclass stringClass = env->GetObjectClass(jStr);
+    const jmethodID getBytes = env->GetMethodID(stringClass, "getBytes", "(Ljava/lang/String;)[B");
+    const jbyteArray stringJbytes = (jbyteArray)env->CallObjectMethod(jStr, getBytes, env->NewStringUTF("UTF-8"));
+
+    size_t length = (size_t)env->GetArrayLength(stringJbytes);
+    jbyte* pBytes = env->GetByteArrayElements(stringJbytes, NULL);
+
+    std::string ret = std::string((char*)pBytes, length);
+    env->ReleaseByteArrayElements(stringJbytes, pBytes, JNI_ABORT);
+
+    env->DeleteLocalRef(stringJbytes);
+    env->DeleteLocalRef(stringClass);
+    return ret;
+}
+
 extern "C"
 JNIEXPORT jstring JNICALL
 Java_com_xtc_common_util_LameInterface_stringFromJNI(
@@ -69,5 +89,57 @@ Java_com_xtc_common_util_LameInterface_pcmToMp3(JNIEnv *env, jobject, jstring pc
 extern "C"
 JNIEXPORT int JNICALL
 Java_com_xtc_common_util_LameInterface_mp3ToPcm(JNIEnv *env, jobject, jstring mp3Path, jstring pcmPath) {
+    int read, i, samples;
+
+    long cumulative_read = 0;
+
+    const int PCM_SIZE = 8192;
+    const int MP3_SIZE = 8192;
+
+    // 输出左右声道
+    short int pcm_l[PCM_SIZE], pcm_r[PCM_SIZE];
+    unsigned char mp3_buffer[MP3_SIZE];
+
+    //input输入MP3文件
+    FILE *mp3 = fopen(jstring2string(env,mp3Path).c_str(), "rb");
+    FILE *pcm = fopen(jstring2string(env,pcmPath).c_str(), "wb");
+    fseek(mp3, 0, SEEK_SET);
+
+    lame_t lame = lame_init();
+    lame_set_decode_only(lame, 1);
+
+    hip_t hip = hip_decode_init();
+
+    mp3data_struct mp3data;
+    memset(&mp3data, 0, sizeof(mp3data));
+
+    int nChannels = -1;
+    int mp3_len;
+
+    while ((read = fread(mp3_buffer, sizeof(char), MP3_SIZE, mp3)) > 0) {
+        mp3_len = read;
+        cumulative_read += read * sizeof(char);
+        do{
+            samples = hip_decode1_headers(hip, mp3_buffer, mp3_len, pcm_l, pcm_r, &mp3data);
+            // 头部解析成功
+            if(mp3data.header_parsed == 1){
+                nChannels = mp3data.stereo;
+            }
+
+            if(samples > 0){
+                for(i = 0 ; i < samples; i++){
+                    fwrite((char*)&pcm_l[i], sizeof(char), sizeof(pcm_l[i]), pcm);
+                    if(nChannels == 2){
+                        fwrite((char*)&pcm_r[i], sizeof(char), sizeof(pcm_r[i]), pcm);
+                    }
+                }
+            }
+            mp3_len = 0;
+        }while(samples>0);
+    }
+    hip_decode_exit(hip);
+    lame_close(lame);
+    fclose(mp3);
+    fclose(pcm);
     return 0;
 }

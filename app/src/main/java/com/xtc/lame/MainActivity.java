@@ -94,6 +94,25 @@ public class MainActivity extends AppCompatActivity {
     private void mp3ToPcm() {
         String mp3Path = getExternalCacheDir() + File.separator + "一定要爱你.mp3";
         String pcmPath = getExternalCacheDir() + File.separator + "一定要爱你.pcm";
+
+        File mp3File = new File(mp3Path);
+        File pcmFile = new File(pcmPath);
+
+        if (mp3File.exists()) {
+            Toast.makeText(this, "mp3音频不存在", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        pcmFile.deleteOnExit();
+
+        LameInterface lameInterface = new LameInterface();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                int code = lameInterface.mp3ToPcm(mp3Path, pcmPath);
+                Toast.makeText(MainActivity.this, code == 0 ? "MP3 -> PCM : Success" : "MP3 -> PCM : Failed", Toast.LENGTH_SHORT).show();
+            }
+        }).start();
     }
 
 

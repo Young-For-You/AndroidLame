@@ -65,3 +65,9 @@ Java_com_xtc_common_util_LameInterface_pcmToMp3(JNIEnv *env, jobject, jstring pc
     env->ReleaseStringUTFChars(mp3Path, mp3_path);
     return 0;
 }
+
+extern "C"
+JNIEXPORT int JNICALL
+Java_com_xtc_common_util_LameInterface_mp3ToPcm(JNIEnv *env, jobject, jstring mp3Path, jstring pcmPath) {
+    return 0;
+}

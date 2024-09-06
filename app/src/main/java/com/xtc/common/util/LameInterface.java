@@ -15,4 +15,5 @@ public class LameInterface {
 
     public native String stringFromJNI();
     public native int pcmToMp3(String pcmPath, String mp3Path, int sampleRate, int channels, int bitRate, int quality);
+    public native int mp3ToPcm(String mp3Path, String pcmPath);
 }
